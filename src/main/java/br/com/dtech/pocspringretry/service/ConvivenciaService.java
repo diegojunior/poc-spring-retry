@@ -1,0 +1,6 @@
+package br.com.dtech.pocspringretry.service;
+
+public interface ConvivenciaService {
+
+	public boolean excutaOperacaoConvivencia(String operacao);
+}
