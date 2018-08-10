@@ -1,5 +1,6 @@
 package br.com.dtech.pocspringretry;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +24,49 @@ public class PocSpringRetryApplicationTests {
 	@Autowired
 	private RetryTemplate retryTemplate;
 
-	@Test(expected = RuntimeException.class)
-	public void contextLoads() {
-		retryTemplate.execute(retry -> {
-			System.out.println("###### Entrei aqui #### ");
+	@Test
+	public void testeRetry() {
+		Boolean status = retryTemplate.execute(retry -> {
 			boolean result = convivenciaService.excutaOperacaoConvivencia("");
+			if (!result) 
+				throw new RuntimeException("Erro ao invocar a convivencia");
 			return result;
+			
+		}, recoverCallback -> {
+			return false;
 		});
+		
+		Assert.assertFalse(status);
+	}
+	
+	@Test
+	public void testeSuccess() {
+		Boolean status = retryTemplate.execute(retry -> {
+			boolean result = convivenciaService.excutaOperacaoConvivencia("asdf");
+			if (!result) 
+				throw new RuntimeException("Erro ao invocar a convivencia");
+			return result;
+			
+		}, recoverCallback -> {
+			return true;
+		});
+		
+		Assert.assertTrue(status);
+	}
+	
+	@Test
+	public void testeSuccessSegundaTentativa() {
+		Boolean status = retryTemplate.execute(retry -> {
+			boolean result = convivenciaService.excutaOperacaoConvivenciaComTentativa("", retry.getRetryCount());
+			if (!result) 
+				throw new RuntimeException("Erro ao invocar a convivencia");
+			return result;
+			
+		}, recoverCallback -> {
+			return true;
+		});
+		
+		Assert.assertTrue(status);
 	}
 
 }
